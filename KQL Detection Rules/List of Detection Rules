@@ -1,6 +1,5 @@
 ## ⭐ Detecting Cryptoming attack File Names, Command Line Process and Malicious Networking Activities
 
-```
 let miner_keywords = dynamic([
     "xmrig", "ethminer", "minerd", "cpuminer", "retea", "haiduc", "xrx", "blacku", "xMEu", "black opera", "diicot",
     "263839397", "cnrig", 
@@ -27,7 +26,6 @@ miner_processes
 | join kind=inner (miner_network) on ReportId
 | sort by ProcTime desc
 
-```
 
 Before I setup log forwarding, I first need to ensure that my Splunk server is set up to actually receive logs. Specifically, I need to make sure that:
 1. The correct ports are open in the Splunk/Ubuntu EC2 security group for log traffic
