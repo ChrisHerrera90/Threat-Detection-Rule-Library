@@ -1,0 +1,36 @@
+## ⭐ Detecting Cryptoming attack File Names, Command Line Process and Malicious Networking Activities
+
+```
+let miner_keywords = dynamic([
+    "xmrig", "ethminer", "minerd", "cpuminer", "retea", "haiduc", "xrx", "blacku", "xMEu", "black opera", "diicot",
+    "263839397", "cnrig", 
+    "94c7c6ca6042201ba200a267a5e0aa4b2d467445bda35a234c1c23dc14359eb7",
+    "cf7f7112b69767b79eba0a1cce0706945634392f0486bd55b12e044f4d2043ce", 
+    "blah"
+]);
+
+let miner_processes =
+    DeviceProcessEvents
+    | where Timestamp > ago(7d)
+    | where ProcessCommandLine has_any (miner_keywords)
+    | where ProcessCommandLine has_any ("wget", "curl")
+    | project ProcTime = Timestamp, DeviceName, FileName, ProcessCommandLine, InitiatingProcessFileName, ReportId;
+
+let miner_network =
+    DeviceNetworkEvents
+    | where Timestamp > ago(7d)
+    | where RemotePort in (333, 14444, 7777, 22, 3389, 4000, 5000, 80, 443)
+        or RemoteUrl has_any ("pool", "miner", "xmr", "eth", "crypto")
+    | project NetTime = Timestamp, DeviceName, InitiatingProcessFileName, RemoteIP, RemotePort, RemoteUrl, ReportId;
+
+miner_processes
+| join kind=inner (miner_network) on ReportId
+| sort by ProcTime desc
+
+```
+
+Before I setup log forwarding, I first need to ensure that my Splunk server is set up to actually receive logs. Specifically, I need to make sure that:
+1. The correct ports are open in the Splunk/Ubuntu EC2 security group for log traffic
+2. Setup my Splunk account to receive logs from sysmon and windows AD logs.
+3. Enable HTTP Event Collector (HEC) so that AWS logs can be forwarded to Splunk
+4. Install "Splunk Add Ons" for AWS services and Microsoft Windows so that Splunk can properly parse these logs.
